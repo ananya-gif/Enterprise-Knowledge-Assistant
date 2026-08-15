@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { getHealth } from '../services/api';
+import { sendChatMessage } from '../services/api';
 
 function ChatPage() {
   const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
 
   const handleSend = async () => {
     try {
-      const health = await getHealth();
+      const result = await sendChatMessage(message);
 
-      console.log(health);
+      setResponse(result.answer);
     } catch (error) {
       console.error(error);
     }
@@ -28,11 +29,13 @@ function ChatPage() {
           onChange={(event) => setMessage(event.target.value)}
         />
 
-        <p>You typed: {message}</p>
-
         <button type="button" onClick={handleSend}>
           Send
         </button>
+
+        <p>You typed: {message}</p>
+
+        <p>Assistant: {response}</p>
       </div>
     </div>
   );

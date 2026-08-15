@@ -1,3 +1,5 @@
+using EnterpriseKnowledgeAssistant.Api.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -14,6 +16,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+builder.Services.AddScoped<ChatService>();
 
 var app = builder.Build();
 
