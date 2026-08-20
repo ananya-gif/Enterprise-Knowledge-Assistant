@@ -4,11 +4,20 @@ namespace EnterpriseKnowledgeAssistant.Api.Services;
 
 public class ChatService
 {
-    public ChatResponse GetResponse(ChatRequest request)
+    private readonly OpenAIService _openAIService;
+
+    public ChatService(OpenAIService openAIService)
     {
+        _openAIService = openAIService;
+    }
+
+    public async Task<ChatResponse> GetResponseAsync(ChatRequest request)
+    {
+        var answer = await _openAIService.GetResponseAsync(request.Message);
+
         return new ChatResponse
         {
-            Answer = $"You asked: {request.Message}"
+            Answer = answer
         };
     }
 }

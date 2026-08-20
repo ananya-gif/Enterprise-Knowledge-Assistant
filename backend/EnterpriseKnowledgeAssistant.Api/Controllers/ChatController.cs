@@ -16,9 +16,9 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Chat(ChatRequest request)
+    public async Task<IActionResult> Chat(ChatRequest request)
     {
-        var response = _chatService.GetResponse(request);
+        var response = await _chatService.GetResponseAsync(request);
 
         return Ok(response);
     }

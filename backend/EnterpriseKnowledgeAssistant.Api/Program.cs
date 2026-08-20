@@ -18,6 +18,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<OpenAIService>();
 
 var app = builder.Build();
 
