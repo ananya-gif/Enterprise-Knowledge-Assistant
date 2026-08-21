@@ -20,4 +20,12 @@ public class ChatService
             Answer = answer
         };
     }
+
+    public async IAsyncEnumerable<string> GetResponseStreamAsync(ChatRequest request)
+    {
+        await foreach (var chunk in _openAIService.GetResponseStreamAsync(request.Message))
+        {
+            yield return chunk;
+        }
+    }
 }

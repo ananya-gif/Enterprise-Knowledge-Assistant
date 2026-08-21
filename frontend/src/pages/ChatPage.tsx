@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sendChatMessage } from '../services/api';
+import { streamChatMessage } from '../services/api';
 
 function ChatPage() {
   const [message, setMessage] = useState('');
@@ -7,9 +7,11 @@ function ChatPage() {
 
   const handleSend = async () => {
     try {
-      const result = await sendChatMessage(message);
+      setResponse('');
 
-      setResponse(result.answer);
+      await streamChatMessage(message, (chunk) => {
+        setResponse((currentResponse) => currentResponse + chunk);
+      });
     } catch (error) {
       console.error(error);
     }

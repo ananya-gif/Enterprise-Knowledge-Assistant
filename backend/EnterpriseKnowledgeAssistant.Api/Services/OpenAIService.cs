@@ -25,4 +25,20 @@ public class OpenAIService
 
         return response.Value.GetOutputText();
     }
+
+    public async IAsyncEnumerable<string> GetResponseStreamAsync(
+        string message)
+    {
+        var responseUpdates = _client.CreateResponseStreamingAsync(
+            "gpt-5",
+            message);
+
+        await foreach (var update in responseUpdates)
+        {
+            if (update is StreamingResponseOutputTextDeltaUpdate textUpdate)
+            {
+                yield return textUpdate.Delta;
+            }
+        }
+    }
 }

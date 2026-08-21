@@ -22,4 +22,16 @@ public class ChatController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPost("stream")]
+    public async Task Stream(ChatRequest request)
+    {
+        Response.ContentType = "text/plain";
+
+        await foreach (var chunk in _chatService.GetResponseStreamAsync(request))
+        {
+            await Response.WriteAsync(chunk);
+            await Response.Body.FlushAsync();
+        }
+    }
 }
