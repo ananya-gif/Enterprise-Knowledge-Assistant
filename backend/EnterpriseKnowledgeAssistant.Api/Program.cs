@@ -19,6 +19,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<OpenAIService>();
+builder.Services.AddScoped<DocumentService>();
+builder.Services.AddScoped<ChunkingService>();
+builder.Services.AddScoped<EmbeddingService>();
+builder.Services.AddScoped<DocumentIngestionService>();
+builder.Services.AddSingleton<InMemoryVectorStore>();
+builder.Services.AddScoped<SemanticSearchService>();
 
 var app = builder.Build();
 
