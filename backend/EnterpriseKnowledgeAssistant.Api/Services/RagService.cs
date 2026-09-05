@@ -23,6 +23,13 @@ public class RagService
             topK: 3);
     }
 
+    public string BuildContext(
+    string question,
+    List<SearchResult> results)
+    {
+        return BuildPrompt(question, results);
+    }
+
     public async Task<string> GenerateAnswerAsync(
         string question,
         List<SearchResult> results)

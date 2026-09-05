@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  sendChatMessage,
+  streamChatMessage,
   uploadDocument,
   type SourceReference,
 } from '../services/api';
@@ -15,27 +15,32 @@ function ChatPage() {
   const [error, setError] = useState('');
 
   const handleSend = async () => {
-    if (!message.trim() || isLoading) {
-      return;
-    }
+  if (!message.trim() || isLoading) {
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      setError('');
-      setResponse('');
-      setSources([]);
+  try {
+    setIsLoading(true);
+    setError('');
+    setResponse('');
+    setSources([]);
 
-      const result = await sendChatMessage(message);
-
-      setResponse(result.answer);
-      setSources(result.sources);
-    } catch (error) {
-      console.error(error);
-      setError('Unable to get a response. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    await streamChatMessage(
+      message,
+      (chunk) => {
+        setResponse((currentResponse) => currentResponse + chunk);
+      },
+      (newSources) => {
+        setSources(newSources);
+      },
+    );
+  } catch (error) {
+    console.error(error);
+    setError('Unable to get a response. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,

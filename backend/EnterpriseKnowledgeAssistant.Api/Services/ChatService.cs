@@ -39,16 +39,45 @@ public class ChatService
         };
     }
 
-    public async IAsyncEnumerable<string> GetResponseStreamAsync(
-        ChatRequest request)
+    public async IAsyncEnumerable<StreamResponse> GetResponseStreamAsync(
+    ChatRequest request)
     {
-        var context = await _ragService.BuildContextAsync(
+        var results = await _ragService.SearchAsync(
             request.Message);
 
-        await foreach (var chunk in
-            _openAIService.GetResponseStreamAsync(context))
+        var sources = results
+    .Select(result => new SourceReference
+    {
+        FileName = result.Chunk.FileName,
+        PageNumber = result.Chunk.PageNumber,
+        ChunkIndex = result.Chunk.ChunkIndex
+    })
+    .DistinctBy(source => new
+    {
+        source.FileName,
+        source.PageNumber,
+        source.ChunkIndex
+    })
+    .ToList();
+
+        yield return new StreamResponse
         {
-            yield return chunk;
+            Type = "sources",
+            Sources = sources
+        };
+
+        var prompt = _ragService.BuildContext(
+        request.Message,
+        results);
+
+        await foreach (var chunk in
+            _openAIService.GetResponseStreamAsync(prompt))
+        {
+            yield return new StreamResponse
+            {
+                Type = "text",
+                Content = chunk
+            };
         }
     }
 }

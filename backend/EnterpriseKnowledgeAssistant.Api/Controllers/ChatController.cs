@@ -26,11 +26,15 @@ public class ChatController : ControllerBase
     [HttpPost("stream")]
     public async Task Stream(ChatRequest request)
     {
-        Response.ContentType = "text/plain";
+        Response.ContentType = "application/x-ndjson";
 
-        await foreach (var chunk in _chatService.GetResponseStreamAsync(request))
+        await foreach (var response in
+     _chatService.GetResponseStreamAsync(request))
         {
-            await Response.WriteAsync(chunk);
+            var json = System.Text.Json.JsonSerializer.Serialize(response);
+
+            await Response.WriteAsync(json);
+            await Response.WriteAsync("\n");
             await Response.Body.FlushAsync();
         }
     }

@@ -34,6 +34,7 @@ export async function sendChatMessage(
 export async function streamChatMessage(
   message: string,
   onChunk: (chunk: string) => void,
+  onSources: (sources: SourceReference[]) => void,
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
     method: 'POST',
@@ -54,6 +55,37 @@ export async function streamChatMessage(
   const reader = response.body.getReader();
   const decoder = new TextDecoder('utf-8');
 
+  let buffer = '';
+
+  const processLine = (line: string) => {
+    if (!line.trim()) {
+      return;
+    }
+
+    const data = JSON.parse(line);
+
+    // Support both camelCase and PascalCase
+    const type = data.type ?? data.Type;
+    const content = data.content ?? data.Content;
+    const sources = data.sources ?? data.Sources;
+
+  if (type === 'sources') {
+  const normalizedSources: SourceReference[] = (sources ?? []).map(
+    (source: any) => ({
+      fileName: source.fileName ?? source.FileName ?? '',
+      pageNumber: source.pageNumber ?? source.PageNumber ?? 0,
+      chunkIndex: source.chunkIndex ?? source.ChunkIndex ?? 0,
+    }),
+  );
+
+  onSources(normalizedSources);
+}
+
+    if (type === 'text') {
+      onChunk(content ?? '');
+    }
+  };
+
   while (true) {
     const { value, done } = await reader.read();
 
@@ -61,12 +93,22 @@ export async function streamChatMessage(
       break;
     }
 
-    const chunk = decoder.decode(value, { stream: true });
+    buffer += decoder.decode(value, { stream: true });
 
-    onChunk(chunk);
+    const lines = buffer.split('\n');
+
+    buffer = lines.pop() ?? '';
+
+    for (const line of lines) {
+      processLine(line);
+    }
   }
 
-  onChunk(decoder.decode());
+  buffer += decoder.decode();
+
+  if (buffer.trim()) {
+    processLine(buffer);
+  }
 }
 
 export async function uploadDocument(
