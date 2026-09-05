@@ -26,10 +26,10 @@ public class DocumentIngestionService
     {
         var documentId = Guid.NewGuid().ToString();
 
-        var text = _documentService.ExtractText(file);
+        var pages = _documentService.ExtractPages(file);
 
-        var chunks = _chunkingService.ChunkText(
-            text,
+        var chunks = _chunkingService.ChunkPages(
+            pages,
             documentId,
             file.FileName);
 

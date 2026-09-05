@@ -1,22 +1,27 @@
-﻿using UglyToad.PdfPig;
+﻿using EnterpriseKnowledgeAssistant.Api.Models;
+using UglyToad.PdfPig;
 
 namespace EnterpriseKnowledgeAssistant.Api.Services;
 
 public class DocumentService
 {
-    public string ExtractText(IFormFile file)
+    public List<DocumentPage> ExtractPages(IFormFile file)
     {
         using var stream = file.OpenReadStream();
 
         using var document = PdfDocument.Open(stream);
 
-        var pages = new List<string>();
+        var pages = new List<DocumentPage>();
 
         foreach (var page in document.GetPages())
         {
-            pages.Add(page.Text);
+            pages.Add(new DocumentPage
+            {
+                PageNumber = page.Number,
+                Text = page.Text
+            });
         }
 
-        return string.Join("\n", pages);
+        return pages;
     }
 }

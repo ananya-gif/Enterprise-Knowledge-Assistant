@@ -16,8 +16,9 @@ public class SemanticSearchService
     }
 
     public async Task<List<SearchResult>> SearchAsync(
-    string query,
-    int topK = 3)
+     string query,
+     int topK = 3,
+     double similarityThreshold = 0.5)
     {
         var queryEmbedding =
             await _embeddingService.GenerateEmbeddingAsync(query);
@@ -32,7 +33,8 @@ public class SemanticSearchService
                     queryEmbedding,
                     chunk.Embedding)
             })
-            .OrderByDescending(x => x.Score)
+            .Where(result => result.Score >= similarityThreshold)
+            .OrderByDescending(result => result.Score)
             .Take(topK)
             .ToList();
 

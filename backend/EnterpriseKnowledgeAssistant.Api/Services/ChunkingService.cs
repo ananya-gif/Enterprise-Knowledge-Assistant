@@ -4,44 +4,48 @@ namespace EnterpriseKnowledgeAssistant.Api.Services;
 
 public class ChunkingService
 {
-    public List<DocumentChunk> ChunkText(
-        string text,
+    public List<DocumentChunk> ChunkPages(
+        List<DocumentPage> pages,
         string documentId,
         string fileName,
         int chunkSize = 500,
         int overlap = 50)
     {
-        var words = text.Split(
-            ' ',
-            StringSplitOptions.RemoveEmptyEntries);
-
         var chunks = new List<DocumentChunk>();
 
-        var start = 0;
         var chunkIndex = 0;
 
-        while (start < words.Length)
+        foreach (var page in pages)
         {
-            var length = Math.Min(
-                chunkSize,
-                words.Length - start);
+            var words = page.Text.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
 
-            var chunkText = string.Join(
-                " ",
-                words.Skip(start).Take(length));
+            var start = 0;
 
-            chunks.Add(new DocumentChunk
+            while (start < words.Length)
             {
-                DocumentId = documentId,
-                FileName = fileName,
-                ChunkIndex = chunkIndex,
-                PageNumber = 0,
-                Text = chunkText
-            });
+                var length = Math.Min(
+                    chunkSize,
+                    words.Length - start);
 
-            chunkIndex++;
+                var chunkText = string.Join(
+                    " ",
+                    words.Skip(start).Take(length));
 
-            start += chunkSize - overlap;
+                chunks.Add(new DocumentChunk
+                {
+                    DocumentId = documentId,
+                    FileName = fileName,
+                    ChunkIndex = chunkIndex,
+                    PageNumber = page.PageNumber,
+                    Text = chunkText
+                });
+
+                chunkIndex++;
+
+                start += chunkSize - overlap;
+            }
         }
 
         return chunks;

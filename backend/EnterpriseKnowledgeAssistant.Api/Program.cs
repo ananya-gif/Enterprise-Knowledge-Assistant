@@ -25,6 +25,7 @@ builder.Services.AddScoped<EmbeddingService>();
 builder.Services.AddScoped<DocumentIngestionService>();
 builder.Services.AddSingleton<InMemoryVectorStore>();
 builder.Services.AddScoped<SemanticSearchService>();
+builder.Services.AddScoped<RagService>();
 
 var app = builder.Build();
 
