@@ -35,8 +35,7 @@ public class DocumentController : ControllerBase
         return Ok(new
         {
             fileName = file.FileName,
-            chunkCount = chunks.Count,
-            chunks
+            chunkCount = chunks.Count
         });
     }
 }
