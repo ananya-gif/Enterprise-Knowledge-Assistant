@@ -1,23 +1,31 @@
 const API_BASE_URL = 'http://localhost:5107';
 
+export interface SourceReference {
+  fileName: string;
+  pageNumber: number;
+  chunkIndex: number;
+}
 
 export interface ChatResponse {
   answer: string;
+  sources: SourceReference[];
 }
 
-export async function sendChatMessage(message: string): Promise<ChatResponse> {
-  const response = await fetch('http://localhost:5107/api/chat', {
+export async function sendChatMessage(
+  message: string,
+): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      message: message,
+      message,
     }),
   });
 
   if (!response.ok) {
-    throw new Error('Failed to send chat message');
+    throw new Error(`Failed to send chat message: ${response.status}`);
   }
 
   return response.json();
@@ -27,38 +35,63 @@ export async function streamChatMessage(
   message: string,
   onChunk: (chunk: string) => void,
 ): Promise<void> {
-  const response = await fetch('http://localhost:5107/api/chat/stream', {
+  const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ message }),
-  })
+  });
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    throw new Error(`Request failed: ${response.status}`);
   }
 
   if (!response.body) {
-    throw new Error('Response body is not available.')
+    throw new Error('Response body is not available.');
   }
 
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder('utf-8')
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
 
   while (true) {
-    const { value, done } = await reader.read()
+    const { value, done } = await reader.read();
 
     if (done) {
-      break
+      break;
     }
 
-    const chunk = decoder.decode(value, { stream: true })
+    const chunk = decoder.decode(value, { stream: true });
 
-    onChunk(chunk)
+    onChunk(chunk);
   }
 
-  onChunk(decoder.decode())
+  onChunk(decoder.decode());
+}
+
+export async function uploadDocument(
+  file: File,
+): Promise<{
+  fileName: string;
+  chunkCount: number;
+}> {
+  const formData = new FormData();
+
+  formData.append('file', file);
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/document/upload`,
+    {
+      method: 'POST',
+      body: formData,
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to upload document: ${response.status}`);
+  }
+
+  return response.json();
 }
 
 export async function getHealth() {
