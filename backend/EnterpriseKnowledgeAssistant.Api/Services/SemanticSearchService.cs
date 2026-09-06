@@ -41,7 +41,7 @@ public class SemanticSearchService
         return results;
     }
 
-    private static double CosineSimilarity(
+    internal static double CosineSimilarity(
         float[] vectorA,
         float[] vectorB)
     {
